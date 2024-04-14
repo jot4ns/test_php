@@ -27,10 +27,10 @@ jobs:
 
     - name: Fetch base branch
       run: git fetch --depth=1 origin ${{ github.base_ref }}
-    
+
     - name: Run PHPCS on modified PHP files
       run: |
-        CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD | grep '\.php$')
+        CHANGED_FILES=$(git diff --name-only ${{ github.base_ref }} HEAD | grep '\.php$')
         if [ -n "$CHANGED_FILES" ]; then
           ./vendor/bin/phpcs $CHANGED_FILES --standard=VariableAnalysis
         else
