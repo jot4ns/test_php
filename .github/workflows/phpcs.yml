@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2  # Asegúrate de usar la versión correcta y más estable
+      uses: actions/checkout@v2  # Actualizado a v2 por consistencia y estabilidad
 
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
@@ -31,13 +31,13 @@ jobs:
     - name: Find modified PHP files
       id: files
       run: |
-        echo "CHANGED_FILES<<EOF" >> $GITHUB_ENV
-        git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '\.php$' >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
+        echo "CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '\.php$')" >> $GITHUB_ENV
 
     - name: Run PHPCS on modified PHP files
       if: env.CHANGED_FILES != ''
       run: |
         ./vendor/bin/phpcs ${{ env.CHANGED_FILES }} --standard=VariableAnalysis
-      else:
-        echo "No PHP files have been modified."
+
+    - name: No PHP files modified
+      if: env.CHANGED_FILES == ''
+      run: echo "No PHP files have been modified."
