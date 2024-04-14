@@ -25,6 +25,14 @@ jobs:
       run: |
         ./vendor/bin/phpcs -i
 
-    - name: Run PHPCS with Variable Analysis
+    - name: Fetch base branch
+      run: git fetch --depth=1 origin ${{ github.base_ref }}
+    
+    - name: Run PHPCS on modified PHP files
       run: |
-        ./vendor/bin/phpcs malass_practicas.php --standard=VariableAnalysis
+        CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD | grep '\.php$')
+        if [ -n "$CHANGED_FILES" ]; then
+          ./vendor/bin/phpcs $CHANGED_FILES --standard=VariableAnalysis
+        else
+          echo "No PHP files have been modified."
+        fi
