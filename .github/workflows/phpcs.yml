@@ -32,7 +32,7 @@ jobs:
       id: files
       run: |
         CHANGED_FILES=$(git diff --name-only b9b9d9e7ab46375a38302f3378c3c380a0abe0fe 68e78211c45be45e5ae7c81a2c5fa2b762d22ef2 | grep '\.php$' || true)
-        FILTERED_FILES=$(echo "$CHANGED_FILES" | grep -E 'test_php/var/www/sigge|test_php/var/lib/sigge/scripts|test_php/var/lib/sigge/plantillas_reportes' || true)
+        FILTERED_FILES=$(echo "$CHANGED_FILES" | grep -E 'var/www/sigge|var/lib/sigge/scripts|var/lib/sigge/plantillas_reportes' || true)
         echo "FILTERED_FILES=$FILTERED_FILES" >> $GITHUB_ENV
         if [ -z "$FILTERED_FILES" ]; then
           echo "No PHP files have been modified in the specified directories."
