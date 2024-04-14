@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v2  # Asegúrate de usar la versión correcta y más estable
 
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
@@ -25,14 +25,19 @@ jobs:
       run: |
         ./vendor/bin/phpcs -i
 
-    - name: Fetch base branch
-      run: git fetch --depth=1 origin ${{ github.base_ref }}
+    - name: Fetch the full commit history
+      run: git fetch --prune --unshallow
+
+    - name: Find modified PHP files
+      id: files
+      run: |
+        echo "CHANGED_FILES<<EOF" >> $GITHUB_ENV
+        git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '\.php$' >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
 
     - name: Run PHPCS on modified PHP files
+      if: env.CHANGED_FILES != ''
       run: |
-        CHANGED_FILES=$(git diff --name-only ${{ github.base_ref }} HEAD | grep '\.php$')
-        if [ -n "$CHANGED_FILES" ]; then
-          ./vendor/bin/phpcs $CHANGED_FILES --standard=VariableAnalysis
-        else
-          echo "No PHP files have been modified."
-        fi
+        ./vendor/bin/phpcs ${{ env.CHANGED_FILES }} --standard=VariableAnalysis
+      else:
+        echo "No PHP files have been modified."
