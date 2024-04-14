@@ -28,16 +28,16 @@ jobs:
     - name: Fetch the full commit history
       run: git fetch --prune --unshallow
 
-    - name: Find modified PHP files
+    - name: Find modified PHP files in specified directories
       id: files
       run: |
-        echo "CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '\.php$')" >> $GITHUB_ENV
+        echo "CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '\.php$' | grep -E '(/var/www/sigge/|/var/lib/sigge/scripts/|/var/lib/sigge/plantillas_reportes/)')" >> $GITHUB_ENV
 
-    - name: Run PHPCS on modified PHP files
+    - name: Run PHPCS on modified PHP files in the specified directories
       if: env.CHANGED_FILES != ''
       run: |
         ./vendor/bin/phpcs ${{ env.CHANGED_FILES }} --standard=VariableAnalysis
 
-    - name: No PHP files modified
+    - name: No PHP files modified in the specified directories
       if: env.CHANGED_FILES == ''
-      run: echo "No PHP files have been modified."
+      run: echo "No PHP files have been modified in the specified directories."
