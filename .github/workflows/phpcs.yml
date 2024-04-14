@@ -35,8 +35,8 @@ jobs:
         FILTERED_FILES=$(echo "$CHANGED_FILES" | grep -E 'sigge|scripts|plantillas_reportes' || true)
         echo "FILTERED_FILES=$FILTERED_FILES" >> $GITHUB_ENV
         if [ -z "$FILTERED_FILES" ]; then
-          echo "No PHP files have been modified in the specified directories."
-          exit 0
+         echo "No PHP files have been modified in the specified directories."
+         exit 0
         fi
 
     - name: Run PHPCS on modified PHP files in the specified directories
