@@ -12,12 +12,19 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.2' # O la versión de PHP que estés utilizando
+        php-version: '8.2'
 
-    - name: Install PHPCS and Variable Analysis Sniff
+    - name: Install PHPCS and Variable Analysis
       run: |
-        composer global require "squizlabs/php_codesniffer=*"
-        composer global require "sirbrillig/phpcs-variable-analysis"
+        composer require --dev "squizlabs/php_codesniffer=*"
+        composer config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+        composer require --dev dealerdirect/phpcodesniffer-composer-installer
+        composer require --dev sirbrillig/phpcs-variable-analysis
 
-    - name: Run PHPCS with Variable Analysis Standard
-      run: ~/.composer/vendor/bin/phpcs malass_practicas.php --standard=VariableAnalysis
+    - name: Check PHP Code Sniffer Rules
+      run: |
+        ./vendor/bin/phpcs -i
+
+    - name: Run PHPCS with Variable Analysis
+      run: |
+        ./vendor/bin/phpcs malass_practicas.php --standard=VariableAnalysis
