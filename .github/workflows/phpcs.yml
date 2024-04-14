@@ -15,5 +15,4 @@ jobs:
     - name: Install PHPCS
       run: composer global require "squizlabs/php_codesniffer=*"
     - name: Run PHPCS
-      run: ~/.composer/vendor/bin/phpcs /test_php --standard=PSR12  # Asegúrate de ajustar la ruta al código que quieres analizar
-      
+      run: ~/.composer/vendor/bin/phpcs malass_practicas.php --standard=PSR12      
