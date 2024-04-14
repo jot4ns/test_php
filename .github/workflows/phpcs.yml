@@ -31,14 +31,19 @@ jobs:
     - name: Find modified PHP files in specified directories
       id: files
       run: |
-        CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '\.php$' | grep -E 'sigge|scripts|plantillas_reportes')
-        echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_ENV
+        CHANGED_FILES=$(git diff --name-only b9b9d9e7ab46375a38302f3378c3c380a0abe0fe 68e78211c45be45e5ae7c81a2c5fa2b762d22ef2 | grep '\.php$' || true)
+        FILTERED_FILES=$(echo "$CHANGED_FILES" | grep -E 'sigge|scripts|plantillas_reportes' || true)
+        echo "FILTERED_FILES=$FILTERED_FILES" >> $GITHUB_ENV
+        if [ -z "$FILTERED_FILES" ]; then
+          echo "No PHP files have been modified in the specified directories."
+          exit 0
+        fi
 
     - name: Run PHPCS on modified PHP files in the specified directories
-      if: env.CHANGED_FILES != ''
+      if: env.FILTERED_FILES != ''
       run: |
-        ./vendor/bin/phpcs $CHANGED_FILES --standard=VariableAnalysis
+        ./vendor/bin/phpcs ${{ env.FILTERED_FILES }} --standard=VariableAnalysis
 
     - name: No PHP files modified in the specified directories
-      if: env.CHANGED_FILES == ''
+      if: env.FILTERED_FILES == ''
       run: echo "No PHP files have been modified in the specified directories."
