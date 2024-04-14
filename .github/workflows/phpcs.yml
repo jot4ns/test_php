@@ -12,7 +12,7 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.2'
+        php-version: '8.2'  # Asegura que es la versión de PHP adecuada para tu proyecto
 
     - name: Install PHPCS and Variable Analysis
       run: |
@@ -25,6 +25,6 @@ jobs:
       run: |
         ./vendor/bin/phpcs -i
 
-    - name: Run PHPCS with Variable Analysis
+    - name: Run PHPCS with PSR12 and Variable Analysis
       run: |
-        ./vendor/bin/phpcs malass_practicas.php --standard=VariableAnalysis
+        ./vendor/bin/phpcs malass_practicas.php --standard=PSR12 --runtime-set installed_paths vendor/sirbrillig/phpcs-variable-analysis
