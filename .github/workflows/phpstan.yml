@@ -1,0 +1,27 @@
+name: PHP Static Analysis
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  phpstan:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+      
+    - name: Install dependencies
+      run: composer install
+      
+    - name: Run PHPStan
+      run: vendor/bin/phpstan analyze --level=5 --path=var/www/sigge --path=var/lib/sigge/scripts --path=var/lib/sigge/plantillas_reportes
