@@ -19,7 +19,6 @@ jobs:
 
         if [[ $COMMIT_MSG =~ correo|mantis ]]; then
           echo "Commit message is valid."
-          exit 0
         else
           echo "Commit message does not contain required keywords (correo|mantis)."
           exit 1
