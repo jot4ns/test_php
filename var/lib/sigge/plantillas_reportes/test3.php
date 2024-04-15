@@ -20,3 +20,4 @@ function testFunction($param)
 testFunction("test");
 
 echo "<br>Blablabla afssad bla1";
+}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
