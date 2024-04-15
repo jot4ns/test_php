@@ -19,4 +19,4 @@ function testFunction($param)
 }
 testFunction("test");
 
-echo "<br>Blablabla bl3dasfs asfasdasd";
+echo "<br>Blablabla bl3dasfs asdad";
