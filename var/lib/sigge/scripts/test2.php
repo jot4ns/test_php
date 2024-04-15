@@ -19,4 +19,4 @@ echo "param test";
 }
 testFunction("test");
 
-echo "<br>Blablabla bla1";
+echo "<br>Blablabla test2";
