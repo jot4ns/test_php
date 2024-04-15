@@ -46,7 +46,7 @@ jobs:
     - name: Run PHPCS on modified PHP files in the specified directories
       if: env.FILTERED_FILES != ''
       run: |
-        ./vendor/bin/phpcs ${{ env.FILTERED_FILES }} --standard=VariableAnalysis
+        ./vendor/bin/phpcs ${{ env.FILTERED_FILES }} --standard=VariableAnalysis,PSR2
 
     - name: No PHP files modified in the specified directories
       if: env.FILTERED_FILES == ''
