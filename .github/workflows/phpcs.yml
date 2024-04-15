@@ -43,10 +43,17 @@ jobs:
           exit 0
         fi
 
+    - name: Run PHP Lint on modified PHP files in the specified directories
+      if: env.FILTERED_FILES != ''
+      run: |
+        for file in $FILTERED_FILES; do
+          php -l $file
+        done
+
     - name: Run PHPCS on modified PHP files in the specified directories
       if: env.FILTERED_FILES != ''
       run: |
-        ./vendor/bin/phpcs ${{ env.FILTERED_FILES }} --standard=VariableAnalysis,PSR1
+        ./vendor/bin/phpcs ${{ env.FILTERED_FILES }} --standard=VariableAnalysis,PSR12
 
     - name: No PHP files modified in the specified directories
       if: env.FILTERED_FILES == ''
