@@ -1,0 +1,22 @@
+name: PHP Documentation Check
+
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  phpdoc-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install phpDocumentor
+        run: composer require --dev phpdocumentor/phpdocumentor
+
+      - name: Run phpDocumentor
+        run: ./vendor/bin/phpdoc check -d path/to/your/code
