@@ -1,12 +1,6 @@
-name: PHP Documentation Check
+name: PHPDoc Check
 
-on:
-  push:
-    branches:
-      - '*'
-  pull_request:
-    branches:
-      - '*'
+on: [push, pull_request]
 
 jobs:
   phpdoc-check:
@@ -15,12 +9,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install phpDocumentor
-        run: composer require --dev phpdocumentor/phpdocumentor
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
 
       - name: Allow symfony/flex plugin
         run: composer config --no-plugins allow-plugins.symfony/flex true
 
-      - name: Run phpDocumentor
-        run: |
-          ./vendor/bin/phpdoc check $(find var/www/sigge var/lib/sigge/scripts var/lib/sigge/plantillas_reportes -type f -name "*.php")
+      - name: Install phpDocumentor
+        run: composer require --dev phpdocumentor/phpdocumentor
+
+      - name: Check PHPDoc
+        run: ./vendor/bin/phpdoccheck --directory=var/www/sigge,/var/lib/sigge/scripts,/var/lib/sigge/plantillas_reportes
