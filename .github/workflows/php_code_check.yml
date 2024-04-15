@@ -1,4 +1,4 @@
-name: PHPCS Code Check
+name: PHP Code Check
 
 on:
   push:
@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4.1.1
 
     - name: Setup PHP
-      uses: shivammathur/setup-php@v2
+      uses: shivammathur/setup-php@2.30.2
       with:
         php-version: '8.2'
 
@@ -26,10 +26,6 @@ jobs:
         composer config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
         composer require --dev dealerdirect/phpcodesniffer-composer-installer
         composer require --dev sirbrillig/phpcs-variable-analysis
-
-    - name: Check PHP Code Sniffer Rules
-      run: |
-        ./vendor/bin/phpcs -i
 
     - name: Find modified PHP files in specified directories
       id: files
