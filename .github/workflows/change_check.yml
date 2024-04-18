@@ -1,3 +1,5 @@
+name: Change Check
+
 on:
   push:
     branches:
@@ -10,20 +12,21 @@ jobs:
   phpcs-check:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
+    - name: Change Check
       uses: actions/checkout@v4.1.1
 
-    - name: Setup PHP
+    - name: Setup PHP and install tools
       uses: shivammathur/setup-php@2.30.2
       with:
         php-version: '8.2'
 
-    - name: Install PHPCS and Variable Analysis
+    - name: Install PHPCS, Variable Analysis, and SQLFluff
       run: |
         composer require --dev "squizlabs/php_codesniffer=*"
         composer config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
         composer require --dev dealerdirect/phpcodesniffer-composer-installer
         composer require --dev sirbrillig/phpcs-variable-analysis
+        pip install sqlfluff
 
     - name: Find modified PHP files in specified directories
       id: files
@@ -49,9 +52,6 @@ jobs:
       run: |
         ./vendor/bin/phpcs ${{ env.FILTERED_FILES }} --standard=VariableAnalysis
 
-    - name: Install SQLFluff
-      run: pip install sqlfluff
-
     - name: Lint SQL files
       run: |
         git fetch --prune --unshallow
@@ -61,7 +61,6 @@ jobs:
           exit 0
         else
           echo $CHANGED_SQL_FILES | xargs sqlfluff lint
-        fi
 
     - name: No PHP files modified in the specified directories
       if: env.FILTERED_FILES == ''
