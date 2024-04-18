@@ -1,2 +1,2 @@
 select * from empresa;
-update empresa from empresa where;
+update empresa set empresa_id = 423 from empresa where;
