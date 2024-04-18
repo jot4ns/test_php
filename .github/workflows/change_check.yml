@@ -28,9 +28,17 @@ jobs:
         composer require --dev sirbrillig/phpcs-variable-analysis
         pip install sqlfluff
 
+    - name: Fetch all history for all tags and branches
+      run: git fetch --prune --unshallow
+
+    - name: Determine base ref
+      id: vars
+      run: |
+        echo "BASE_REF=$(git merge-base HEAD ${{ github.base_ref }} || echo ${{ github.base_ref }})" >> $GITHUB_ENV
+
     - name: Find modified files in specified directories
       run: |
-        CHANGED_FILES=$(git diff --name-only HEAD^ HEAD || true)
+        CHANGED_FILES=$(git diff --name-only $BASE_REF HEAD || true)
         PHP_FILES=$(echo "$CHANGED_FILES" | grep -E '\.php$' | grep -E 'var/www/sigge|var/lib/sigge/scripts|var/lib/sigge/plantillas_reportes|otros' || true)
         SQL_FILES=$(echo "$CHANGED_FILES" | grep '\.sql$' || true)
         echo "PHP_FILES=$PHP_FILES" >> $GITHUB_ENV
