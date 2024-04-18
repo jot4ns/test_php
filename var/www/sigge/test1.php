@@ -19,5 +19,5 @@ function testFunction($param)
 }
 testFunction("test");
 
-echo "<br>Blaadsasblabla 123";
+echo "<br>Blaaddasbla 123";
 ?>
