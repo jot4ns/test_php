@@ -1,0 +1,1 @@
+seletc * from empresa;
