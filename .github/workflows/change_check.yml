@@ -73,7 +73,7 @@ jobs:
     - name: Lint SQL files
       if: env.SQL_FILES != ''
       run: |
-        echo $SQL_FILES | xargs sqlfluff lint
+        echo $SQL_FILES | xargs sqlfluff lint --dialect postgres
 
     - name: No files modified
       if: env.PHP_FILES == '' && env.SQL_FILES == '' && env.HAS_PREVIOUS_COMMIT == 'true'
