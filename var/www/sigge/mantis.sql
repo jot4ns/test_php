@@ -1,2 +1,2 @@
 select * from empresa;
-update * frmo empresa where;
+update empresa from empresa where;
