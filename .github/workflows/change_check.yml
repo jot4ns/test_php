@@ -9,7 +9,7 @@ on:
       - '*'
 
 jobs:
-  phpcs-check:
+  change-check:
     runs-on: ubuntu-latest
     steps:
     - name: Change Check
@@ -28,40 +28,37 @@ jobs:
         composer require --dev sirbrillig/phpcs-variable-analysis
         pip install sqlfluff
 
-    - name: Find modified PHP files in specified directories
-      id: files
+    - name: Find modified files in specified directories
       run: |
-        git fetch --prune --unshallow
-        CHANGED_FILES=$(git diff --name-only HEAD^ HEAD | grep '\.php$' || true)
-        FILTERED_FILES=$(echo "$CHANGED_FILES" | grep -E 'var/www/sigge|var/lib/sigge/scripts|var/lib/sigge/plantillas_reportes|otros' || true)
-        echo "FILTERED_FILES=$FILTERED_FILES" >> $GITHUB_ENV
-        if [ -z "$FILTERED_FILES" ]; then
+        CHANGED_FILES=$(git diff --name-only HEAD^ HEAD || true)
+        PHP_FILES=$(echo "$CHANGED_FILES" | grep -E '\.php$' | grep -E 'var/www/sigge|var/lib/sigge/scripts|var/lib/sigge/plantillas_reportes|otros' || true)
+        SQL_FILES=$(echo "$CHANGED_FILES" | grep '\.sql$' || true)
+        echo "PHP_FILES=$PHP_FILES" >> $GITHUB_ENV
+        echo "SQL_FILES=$SQL_FILES" >> $GITHUB_ENV
+        if [ -z "$PHP_FILES" ]; then
           echo "No PHP files have been modified in the specified directories."
-          exit 0
+        fi
+        if [ -z "$SQL_FILES" ]; then
+          echo "No SQL files have been modified."
         fi
 
     - name: Run PHP Lint on modified PHP files in the specified directories
-      if: env.FILTERED_FILES != ''
+      if: env.PHP_FILES != ''
       run: |
-        for file in $FILTERED_FILES; do
+        for file in $PHP_FILES; do
           php -l $file
         done
 
     - name: Run PHPCS on modified PHP files in the specified directories
-      if: env.FILTERED_FILES != ''
+      if: env.PHP_FILES != ''
       run: |
-        ./vendor/bin/phpcs ${{ env.FILTERED_FILES }} --standard=VariableAnalysis
+        ./vendor/bin/phpcs ${{ env.PHP_FILES }} --standard=VariableAnalysis
 
     - name: Lint SQL files
+      if: env.SQL_FILES != ''
       run: |
-        git fetch --prune --unshallow
-        CHANGED_SQL_FILES=$(git diff --name-only HEAD^ HEAD | grep '\.sql$' || true)
-        if [ -z "$CHANGED_SQL_FILES" ]; then
-          echo "No SQL files have been modified."
-          exit 0
-        else
-          echo $CHANGED_SQL_FILES | xargs sqlfluff lint
+        echo $SQL_FILES | xargs sqlfluff lint
 
-    - name: No PHP files modified in the specified directories
-      if: env.FILTERED_FILES == ''
-      run: echo "No PHP files have been modified in the specified directories."
+    - name: No files modified
+      if: env.PHP_FILES == '' && env.SQL_FILES == ''
+      run: echo "No PHP or SQL files have been modified."
