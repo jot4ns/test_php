@@ -12,7 +12,7 @@ jobs:
   change-check:
     runs-on: ubuntu-latest
     steps:
-    - name: Change Check
+    - name: Checkout code
       uses: actions/checkout@v4.1.1
 
     - name: Setup PHP and install tools
@@ -31,27 +31,31 @@ jobs:
     - name: Fetch all history for all tags and branches
       run: git fetch --prune --unshallow
 
-    - name: Determine base ref
-      id: vars
+    - name: Determine if there is a previous commit
       run: |
-        echo "BASE_REF=$(git merge-base HEAD ${{ github.base_ref }} || echo ${{ github.base_ref }})" >> $GITHUB_ENV
+        if git rev-parse HEAD^ > /dev/null 2>&1; then
+          echo "HAS_PREVIOUS_COMMIT=true" >> $GITHUB_ENV
+        else
+          echo "HAS_PREVIOUS_COMMIT=false" >> $GITHUB_ENV
+        fi
 
     - name: Find modified files in specified directories
       run: |
-        echo "BASE_REF: $BASE_REF"
-        CHANGED_FILES=$(git diff --name-only $BASE_REF HEAD || true)
-        echo "CHANGED_FILES: $CHANGED_FILES"
-        PHP_FILES=$(echo "$CHANGED_FILES" | grep -E '\.php$' | grep -E 'var/www/sigge|var/lib/sigge/scripts|var/lib/sigge/plantillas_reportes|otros' || true)
-        SQL_FILES=$(echo "$CHANGED_FILES" | grep '\.sql$' || true)
-        echo "PHP_FILES: $PHP_FILES"
-        echo "SQL_FILES: $SQL_FILES"
-        echo "PHP_FILES=$PHP_FILES" >> $GITHUB_ENV
-        echo "SQL_FILES=$SQL_FILES" >> $GITHUB_ENV
-        if [ -z "$PHP_FILES" ]; then
-          echo "No PHP files have been modified in the specified directories."
-        fi
-        if [ -z "$SQL_FILES" ]; then
-          echo "No SQL files have been modified."
+        if [ "$HAS_PREVIOUS_COMMIT" == "true" ]; then
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD || true)
+          echo "CHANGED_FILES: $CHANGED_FILES"
+          PHP_FILES=$(echo "$CHANGED_FILES" | grep -E '\.php$' | grep -E 'var/www/sigge|var/lib/sigge/scripts|var/lib/sigge/plantillas_reportes|otros' || true)
+          SQL_FILES=$(echo "$CHANGED_FILES" | grep '\.sql$' || true)
+          echo "PHP_FILES=$PHP_FILES" >> $GITHUB_ENV
+          echo "SQL_FILES=$SQL_FILES" >> $GITHUB_ENV
+          if [ -z "$PHP_FILES" ]; then
+            echo "No PHP files have been modified in the specified directories."
+          fi
+          if [ -z "$SQL_FILES" ]; then
+            echo "No SQL files have been modified."
+          fi
+        else
+          echo "No previous commit to compare, skipping file change detection."
         fi
 
     - name: Run PHP Lint on modified PHP files in the specified directories
@@ -72,5 +76,5 @@ jobs:
         echo $SQL_FILES | xargs sqlfluff lint
 
     - name: No files modified
-      if: env.PHP_FILES == '' && env.SQL_FILES == ''
+      if: env.PHP_FILES == '' && env.SQL_FILES == '' && "$HAS_PREVIOUS_COMMIT" == "true"
       run: echo "No PHP or SQL files have been modified."
