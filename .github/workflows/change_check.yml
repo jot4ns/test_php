@@ -12,7 +12,7 @@ jobs:
   change-check:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
+    - name: Change Check
       uses: actions/checkout@v4.1.1
 
     - name: Setup PHP and install tools
@@ -65,15 +65,15 @@ jobs:
           php -l $file
         done
 
+    - name: Run SQL Lint on modified SQL files
+      if: env.SQL_FILES != ''
+      run: |
+        echo $SQL_FILES | xargs sqlfluff lint --dialect postgres
+        
     - name: Run PHPCS on modified PHP files
       if: env.PHP_FILES != ''
       run: |
         ./vendor/bin/phpcs ${{ env.PHP_FILES }} --standard=VariableAnalysis
-
-    - name: Lint SQL files
-      if: env.SQL_FILES != ''
-      run: |
-        echo $SQL_FILES | xargs sqlfluff lint --dialect postgres
 
     - name: No files modified
       if: env.PHP_FILES == '' && env.SQL_FILES == '' && env.HAS_PREVIOUS_COMMIT == 'true'
