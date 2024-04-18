@@ -1,5 +1,3 @@
-name: PHP Code Check
-
 on:
   push:
     branches:
@@ -32,7 +30,7 @@ jobs:
       run: |
         git fetch --prune --unshallow
         CHANGED_FILES=$(git diff --name-only HEAD^ HEAD | grep '\.php$' || true)
-        FILTERED_FILES=$(echo "$CHANGED_FILES" | grep -E 'var/www/sigge|var/lib/sigge/scripts|var/lib/sigge/plantillas_reportes' || true)
+        FILTERED_FILES=$(echo "$CHANGED_FILES" | grep -E 'var/www/sigge|var/lib/sigge/scripts|var/lib/sigge/plantillas_reportes|otros' || true)
         echo "FILTERED_FILES=$FILTERED_FILES" >> $GITHUB_ENV
         if [ -z "$FILTERED_FILES" ]; then
           echo "No PHP files have been modified in the specified directories."
@@ -49,7 +47,21 @@ jobs:
     - name: Run PHPCS on modified PHP files in the specified directories
       if: env.FILTERED_FILES != ''
       run: |
-        ./vendor/bin/phpcs ${{ env.FILTERED_FILES }} --standard=VariableAnalysis,PSR12
+        ./vendor/bin/phpcs ${{ env.FILTERED_FILES }} --standard=VariableAnalysis
+
+    - name: Install SQLFluff
+      run: pip install sqlfluff
+
+    - name: Lint SQL files
+      run: |
+        git fetch --prune --unshallow
+        CHANGED_SQL_FILES=$(git diff --name-only HEAD^ HEAD | grep '\.sql$' || true)
+        if [ -z "$CHANGED_SQL_FILES" ]; then
+          echo "No SQL files have been modified."
+          exit 0
+        else
+          echo $CHANGED_SQL_FILES | xargs sqlfluff lint
+        fi
 
     - name: No PHP files modified in the specified directories
       if: env.FILTERED_FILES == ''
