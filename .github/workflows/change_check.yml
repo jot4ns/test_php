@@ -76,5 +76,5 @@ jobs:
         echo $SQL_FILES | xargs sqlfluff lint
 
     - name: No files modified
-      if: env.PHP_FILES == '' && env.SQL_FILES == '' && "$HAS_PREVIOUS_COMMIT" == "true"
+      if: env.PHP_FILES == '' && env.SQL_FILES == '' && env.HAS_PREVIOUS_COMMIT == 'true'
       run: echo "No PHP or SQL files have been modified."
