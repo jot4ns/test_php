@@ -68,12 +68,16 @@ jobs:
     - name: Run SQL Lint on modified SQL files
       if: env.SQL_FILES != ''
       run: |
-        if [ -n "$SQL_FILES" ]; then
-        SQL_FILES_SPACED=$(echo "$SQL_FILES" | tr ',' ' ')
-        for sql_file in $SQL_FILES_SPACED; do
-         sqlfluff lint --dialect postgres "$sql_file"
+        echo "Archivos SQL para lintear: $SQL_FILES"
+        IFS=',' read -ra SQL_FILE_ARRAY <<< "$SQL_FILES"
+        for sql_file in "${SQL_FILE_ARRAY[@]}"; do
+          echo "Comprobando archivo: $sql_file"
+          if [ -f "$sql_file" ]; then
+            sqlfluff lint --dialect postgres "$sql_file"
+          else
+            echo "El archivo $sql_file no existe."
+          fi
         done
-        fi
 
     - name: Run PHPCS on modified PHP files
       if: env.PHP_FILES != ''
