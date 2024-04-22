@@ -9,7 +9,7 @@ echo "param test";
 }
     global $otraVar;
     $varNoUsada = 23;
-    $otraVar = "BlaBla";
+    $otraVar = "BldsadaBla";
     $fecha = split(":", "2023:04:14");
     $nuevoValor = & $param;
     for ($i = 0; $i<10;$i++){
@@ -19,4 +19,4 @@ echo "param test";
 }
 testFunction("test");
 
-echo "<br>Blablasddfasqwsabla test2";
+echo "<br>Blafdqwsabla test2";

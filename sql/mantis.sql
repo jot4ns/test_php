@@ -1,2 +1,2 @@
 select * from empresa;
-update empresa set empresa_id = 423 frsom empresa wadfre;
+updwate empresa sesst empresa_id = 423 frsom empresa wfre;
