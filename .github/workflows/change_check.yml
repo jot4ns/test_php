@@ -45,7 +45,7 @@ jobs:
           CHANGED_FILES=$(git diff --name-only HEAD^ HEAD | tr '\n' ' ' || true)
           echo "CHANGED_FILES: $CHANGED_FILES"
           PHP_FILES=$(echo "$CHANGED_FILES" | grep -o -E 'var/www/sigge/.*\.php|var/lib/sigge/scripts/.*\.php|var/lib/sigge/plantillas_reportes/.*\.php|otros/.*\.php|sql/.*\.php' || true)
-          SQL_FILES=$(echo "$CHANGED_FILES" | grep -o '\.sql' || true)
+          SQL_FILES=$(echo "$CHANGED_FILES" | grep -o -E '\.sql' || true)
           echo "PHP_FILES=$(echo $PHP_FILES | tr ' ' ',')" >> $GITHUB_ENV
           echo "SQL_FILES=$(echo $SQL_FILES | tr ' ' ',')" >> $GITHUB_ENV
           if [ -z "$PHP_FILES" ]; then
@@ -61,19 +61,23 @@ jobs:
     - name: Run PHP Lint on modified PHP files
       if: env.PHP_FILES != ''
       run: |
-        for file in ${PHP_FILES//,/ }; do
-          php -l $file
-        done
+        if [ -n "$PHP_FILES" ]; then
+          echo $PHP_FILES | tr ',' '\n' | xargs -d '\n' php -l
+        fi
 
     - name: Run SQL Lint on modified SQL files
       if: env.SQL_FILES != ''
       run: |
-        echo $SQL_FILES | xargs -d ',' sqlfluff lint --dialect postgres
+        if [ -n "$SQL_FILES" ]; then
+          echo $SQL_FILES | tr ',' '\n' | xargs -d '\n' sqlfluff lint --dialect postgres
+        fi
         
     - name: Run PHPCS on modified PHP files
       if: env.PHP_FILES != ''
       run: |
-        ./vendor/bin/phpcs --standard=VariableAnalysis ${PHP_FILES//,/ }
+        if [ -n "$PHP_FILES" ]; then
+          ./vendor/bin/phpcs --standard=VariableAnalysis ${PHP_FILES//,/ }
+        fi
 
     - name: No files modified
       if: env.PHP_FILES == '' && env.SQL_FILES == '' && env.HAS_PREVIOUS_COMMIT == 'true'
