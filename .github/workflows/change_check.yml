@@ -42,12 +42,12 @@ jobs:
     - name: Find modified files in specified directories
       run: |
         if [ "$HAS_PREVIOUS_COMMIT" == "true" ]; then
-          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD || true)
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD | tr '\n' ' ' || true)
           echo "CHANGED_FILES: $CHANGED_FILES"
-          PHP_FILES=$(echo "$CHANGED_FILES" | grep -E '\.php$' | grep -E 'var/www/sigge|var/lib/sigge/scripts|var/lib/sigge/plantillas_reportes|otros' || true)
-          SQL_FILES=$(echo "$CHANGED_FILES" | grep '\.sql$' || true)
-          echo "PHP_FILES=$PHP_FILES" >> $GITHUB_ENV
-          echo "SQL_FILES=$SQL_FILES" >> $GITHUB_ENV
+          PHP_FILES=$(echo "$CHANGED_FILES" | grep -o -E 'var/www/sigge/.*\.php|var/lib/sigge/scripts/.*\.php|var/lib/sigge/plantillas_reportes/.*\.php|otros/.*\.php|sql/.*\.php' || true)
+          SQL_FILES=$(echo "$CHANGED_FILES" | grep -o '\.sql' || true)
+          echo "PHP_FILES=$(echo $PHP_FILES | tr ' ' ',')" >> $GITHUB_ENV
+          echo "SQL_FILES=$(echo $SQL_FILES | tr ' ' ',')" >> $GITHUB_ENV
           if [ -z "$PHP_FILES" ]; then
             echo "No PHP files have been modified."
           fi
@@ -61,19 +61,19 @@ jobs:
     - name: Run PHP Lint on modified PHP files
       if: env.PHP_FILES != ''
       run: |
-        for file in $PHP_FILES; do
+        for file in ${PHP_FILES//,/ }; do
           php -l $file
         done
 
     - name: Run SQL Lint on modified SQL files
       if: env.SQL_FILES != ''
       run: |
-        echo $SQL_FILES | xargs sqlfluff lint --dialect postgres
+        echo $SQL_FILES | xargs -d ',' sqlfluff lint --dialect postgres
         
     - name: Run PHPCS on modified PHP files
       if: env.PHP_FILES != ''
       run: |
-        ./vendor/bin/phpcs ${{ env.PHP_FILES }} --standard=VariableAnalysis
+        ./vendor/bin/phpcs --standard=VariableAnalysis ${PHP_FILES//,/ }
 
     - name: No files modified
       if: env.PHP_FILES == '' && env.SQL_FILES == '' && env.HAS_PREVIOUS_COMMIT == 'true'
