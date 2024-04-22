@@ -69,9 +69,9 @@ jobs:
       if: env.SQL_FILES != ''
       run: |
         if [ -n "$SQL_FILES" ]; then
-          echo $SQL_FILES | tr ',' '\n' | xargs -d '\n' sqlfluff lint --dialect postgres
+          echo "$SQL_FILES" | tr ',' '\n' | xargs -d '\n' -I {} sqlfluff lint --dialect postgres {}
         fi
-        
+
     - name: Run PHPCS on modified PHP files
       if: env.PHP_FILES != ''
       run: |
