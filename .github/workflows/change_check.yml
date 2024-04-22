@@ -45,7 +45,7 @@ jobs:
           CHANGED_FILES=$(git diff --name-only HEAD^ HEAD | tr '\n' ' ' || true)
           echo "CHANGED_FILES: $CHANGED_FILES"
           PHP_FILES=$(echo "$CHANGED_FILES" | grep -o -E 'var/www/sigge/.*\.php|var/lib/sigge/scripts/.*\.php|var/lib/sigge/plantillas_reportes/.*\.php|otros/.*\.php|sql/.*\.php' || true)
-          SQL_FILES=$(echo "$CHANGED_FILES" | grep -o -E '\.sql' || true)
+          SQL_FILES=$(echo "$CHANGED_FILES" | grep -o -E '.*\.sql$' || true)
           echo "PHP_FILES=$(echo $PHP_FILES | tr ' ' ',')" >> $GITHUB_ENV
           echo "SQL_FILES=$(echo $SQL_FILES | tr ' ' ',')" >> $GITHUB_ENV
           if [ -z "$PHP_FILES" ]; then
@@ -61,30 +61,28 @@ jobs:
     - name: Run PHP Lint on modified PHP files
       if: env.PHP_FILES != ''
       run: |
-        if [ -n "$PHP_FILES" ]; then
-          echo $PHP_FILES | tr ',' '\n' | xargs -d '\n' php -l
-        fi
+        IFS=',' read -ra PHP_FILE_ARRAY <<< "$PHP_FILES"
+        for php_file in "${PHP_FILE_ARRAY[@]}"; do
+          php -l "$php_file"
+        done
 
     - name: Run SQL Lint on modified SQL files
       if: env.SQL_FILES != ''
       run: |
-        echo "Archivos SQL para lintear: $SQL_FILES"
         IFS=',' read -ra SQL_FILE_ARRAY <<< "$SQL_FILES"
         for sql_file in "${SQL_FILE_ARRAY[@]}"; do
           echo "Comprobando archivo: $sql_file"
-          if [ -f "$sql_file" ]; then
+          if [[ -f "$sql_file" && "$sql_file" == *.sql ]]; then
             sqlfluff lint --dialect postgres "$sql_file"
           else
-            echo "El archivo $sql_file no existe."
+            echo "El archivo $sql_file no existe o no es un archivo .sql."
           fi
         done
-
+        
     - name: Run PHPCS on modified PHP files
       if: env.PHP_FILES != ''
       run: |
-        if [ -n "$PHP_FILES" ]; then
-          ./vendor/bin/phpcs --standard=VariableAnalysis ${PHP_FILES//,/ }
-        fi
+        ./vendor/bin/phpcs --standard=VariableAnalysis ${PHP_FILES//,/ }
 
     - name: No files modified
       if: env.PHP_FILES == '' && env.SQL_FILES == '' && env.HAS_PREVIOUS_COMMIT == 'true'
