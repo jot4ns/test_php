@@ -13,7 +13,7 @@ function testFunction($param)
     $fecha = split(":", "2023:04:14");
     $nuevoValor = & $param;
     for ($i = 0; $i<10;$i++){
-        echo $i; // Espaciado y formato inconsistentes
+        echo $i;
     }
     return $nuevoValor;
 }

@@ -13,10 +13,10 @@ echo "param test";
     $fecha = split(":", "2023:04:14");
     $nuevoValor = & $param;
     for ($i = 0; $i<10;$i++){
-        echo $i; // Espaciado y formato inconsistentes
+        echo $i;
     }
     return $nuevoValor;
 }
 testFunction("test");
 
-echo "<br>Blablqweqweabla test2";
+echo "<br>Blablqwabla test2";
