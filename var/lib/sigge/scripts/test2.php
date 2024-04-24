@@ -9,7 +9,7 @@ echo "param test";
 }
     global $otraVar;
     $varNoUsada = 23;
-    $otraVar = "eSAFASrwerrrr";
+    $otraVar = "dasfasfas";
     $fecha = split(":", "2023:04:14");
     $nuevoValor = & $param;
     for ($i = 0; $i<10;$i++){

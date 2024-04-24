@@ -5,7 +5,7 @@ define('constante', 'ValorConstante');
 function testFunction($param)
 {
     if ($param = 'test')
-    echo "param DASFASGFAS";
+    echo "param sfasd";
     }
     global $otraVar;
     $varNoUsada = 23;
