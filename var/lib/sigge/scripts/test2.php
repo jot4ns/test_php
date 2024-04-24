@@ -4,7 +4,7 @@ define('constante', 'ValorConstante');
 
 function testFunction($param)
 {
-    if ($param== 'asdas'){
+    if ($param== 'fasdasd'){
 echo "param test";
 }
     global $otraVar;

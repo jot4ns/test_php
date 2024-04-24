@@ -9,7 +9,7 @@ function testFunction($param)
     }
     global $otraVar;
     $varNoUsada = 23;
-    $otraVar = "rewr";
+    $otraVar = "fasfsafas";
     $fecha = split(":", "2023:04:14");
     $nuevoValor = & $param;
     for ($i = 0; $i<10;$i++){
