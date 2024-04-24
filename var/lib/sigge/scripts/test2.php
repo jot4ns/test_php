@@ -4,12 +4,12 @@ define('constante', 'ValorConstante');
 
 function testFunction($param)
 {
-    if ($param== 'fdfas'){
+    if ($param== 'asdas'){
 echo "param test";
 }
     global $otraVar;
     $varNoUsada = 23;
-    $otraVar = "dasfasdsasfas";
+    $otraVar = "dsfds";
     $fecha = split(":", "2023:04:14");
     $nuevoValor = & $param;
     for ($i = 0; $i<10;$i++){
