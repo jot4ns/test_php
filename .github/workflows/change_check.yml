@@ -43,8 +43,8 @@ jobs:
         run: |
           if [ "$HAS_PREVIOUS_COMMIT" == "true" ]; then
             CHANGED_FILES=$(git diff --name-only HEAD^ HEAD || true)
-            PHP_FILES=$(echo "$CHANGED_FILES" | grep -E '/var/www/sigge|/var/lib/sigge/scripts|/var/lib/sigge/plantillas_reportes|/otros' | grep -E '\.php$' || true)
-            SQL_FILES=$(echo "$CHANGED_FILES" | grep -E '/sql' | grep '\.sql$' || true)
+            PHP_FILES=$(echo "$CHANGED_FILES" | grep -E 'var/www/sigge|/var/lib/sigge/scripts|var/lib/sigge/plantillas_reportes|otros' | grep -E '\.php$' || true)
+            SQL_FILES=$(echo "$CHANGED_FILES" | grep -E 'sql' | grep '\.sql$' || true)
             echo "PHP_FILES=$PHP_FILES" >> $GITHUB_ENV
             echo "SQL_FILES=$SQL_FILES" >> $GITHUB_ENV
           else
