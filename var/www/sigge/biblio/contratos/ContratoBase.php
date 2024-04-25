@@ -1,1 +1,2 @@
-var/www/sigge/biblio/contratos/ContratoBase.php
+<?php
+echo "param test";
