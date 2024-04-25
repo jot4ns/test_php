@@ -54,38 +54,44 @@ jobs:
       - name: Run PHP Lint on modified PHP files
         if: env.PHP_FILES != ''
         run: |
-          IFS=' ' read -r -a php_files_array <<< "$PHP_FILES"
-          for file in "${php_files_array[@]}"; do
-            if [ -f "$file" ]; then
-              php -l "$file" || echo "PHP Lint found issues in $file"
-            else
-              echo "El archivo PHP $file no existe o no fue encontrado."
-            fi
-          done
-
-      - name: Run SQL Lint on modified SQL files
-        if: env.SQL_FILES != ''
-        run: |
-          IFS=' ' read -r -a sql_files_array <<< "$SQL_FILES"
-          for file in "${sql_files_array[@]}"; do
-            if [ -f "$file" ]; then
-              sqlfluff lint --dialect postgres "$file" || echo "SQL Lint found issues in $file"
-            else
-              echo "El archivo SQL $file no existe o no fue encontrado."
-            fi
-          done
-
-      - name: Run PHPCS on modified PHP files
-        if: env.PHP_FILES != ''
-        run: |
-          IFS=' ' read -r -a php_files_array <<< "$PHP_FILES"
-          for file in "${php_files_array[@]}"; do
-            if [ -f "$file" ]; then
-              ./vendor/bin/phpcs --standard=VariableAnalysis "$file" || echo "PHPCS found issues in $file"
-            else
-              echo "El archivo PHP $file para PHPCS no existe o no fue encontrado."
-            fi
-          done
+            # Convertir la lista de archivos en un array
+            IFS=$'\n' read -r -d '' -a php_files_array <<< "${{ env.PHP_FILES }}"
+            # Iterar sobre cada archivo PHP
+            for file in "${php_files_array[@]}"; do
+              if [ -f "$file" ]; then
+                php -l "$file" || echo "PHP Lint found issues in $file"
+              else
+                echo "El archivo PHP $file no existe o no fue encontrado."
+              fi
+            done
+        
+        - name: Run SQL Lint on modified SQL files
+          if: env.SQL_FILES != ''
+          run: |
+            # Convertir la lista de archivos en un array
+            IFS=$'\n' read -r -d '' -a sql_files_array <<< "${{ env.SQL_FILES }}"
+            # Iterar sobre cada archivo SQL
+            for file in "${sql_files_array[@]}"; do
+              if [ -f "$file" ]; then
+                sqlfluff lint --dialect postgres "$file" || echo "SQL Lint found issues in $file"
+              else
+                echo "El archivo SQL $file no existe o no fue encontrado."
+              fi
+            done
+        
+        - name: Run PHPCS on modified PHP files
+          if: env.PHP_FILES != ''
+          run: |
+            # Convertir la lista de archivos en un array
+            IFS=$'\n' read -r -d '' -a php_files_array <<< "${{ env.PHP_FILES }}"
+            # Iterar sobre cada archivo PHP
+            for file in "${php_files_array[@]}"; do
+              if [ -f "$file" ]; then
+                ./vendor/bin/phpcs --standard=VariableAnalysis "$file" || echo "PHPCS found issues in $file"
+              else
+                echo "El archivo PHP $file para PHPCS no existe o no fue encontrado."
+              fi
+            done        
 
       - name: No files modified
         if: env.PHP_FILES == '' && env.SQL_FILES == '' && env.HAS_PREVIOUS_COMMIT == 'true'
