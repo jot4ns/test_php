@@ -1,2 +1,2 @@
 <?php
-echo "param fsadas";
+echo "param sdasasd";

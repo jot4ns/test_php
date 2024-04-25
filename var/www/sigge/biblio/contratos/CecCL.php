@@ -1,2 +1,2 @@
 <?php
-echo "param fasdas";
+echo "param dasdas";
