@@ -45,12 +45,15 @@ jobs:
           CHANGED_FILES=$(git diff --name-only HEAD^ HEAD || true)
           PHP_FILES=$(echo "$CHANGED_FILES" | grep -E 'var/www/sigge|var/lib/sigge/scripts|var/lib/sigge/plantillas_reportes|otros' | grep -E '\.php$' || true)
           SQL_FILES=$(echo "$CHANGED_FILES" | grep -E 'sql' | grep '\.sql$' || true)
-          printf "PHP_FILES=%s\n" "$PHP_FILES" >> $GITHUB_ENV
-          printf "SQL_FILES=%s\n" "$SQL_FILES" >> $GITHUB_ENV
+          echo "CHANGED_FILES: $CHANGED_FILES"  # Depuración
+          echo "PHP_FILES: $PHP_FILES"          # Depuración
+          echo "SQL_FILES: $SQL_FILES"          # Depuración
+          echo "PHP_FILES=\"$PHP_FILES\"" >> $GITHUB_ENV
+          echo "SQL_FILES=\"$SQL_FILES\"" >> $GITHUB_ENV
         else
           echo "No previous commit to compare."
         fi
-
+        
     - name: Run PHP Lint on modified PHP files
       if: env.PHP_FILES != ''
       run: |
