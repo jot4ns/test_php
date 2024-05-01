@@ -64,10 +64,18 @@ jobs:
         run: |
           IFS=' ' read -r -a sql_files_array <<< "$SQL_FILES"
           for file in "${sql_files_array[@]}"; do
-            # Ejecutar SQLFluff con salida JSON
+            echo "Linting $file"
+            set +e  # Permitir continuar aunque SQLFluff falle
             RESULT=$(sqlfluff lint --dialect postgres --format json "$file")
-            # Filtrar la salida para mostrar solo errores de las reglas permitidas
-            echo "$RESULT" | jq '.violations[] | select(.code | test("L013|L029|L031|L034|L042|L054"))'
+            set -e  # Restablecer el comportamiento normal de salida en error
+            echo "Result for $file: $RESULT"
+            FILTERED=$(echo "$RESULT" | jq -c '.violations[] | select(.code | test("L013|L029|L031|L034|L042|L054"))')
+            if [ -z "$FILTERED" ]; then
+              echo "No violations matching the specified codes were found in $file"
+            else
+              echo "Violations found in $file:"
+              echo "$FILTERED"
+            fi
           done
 
       - name: Run PHPCS on modified PHP files
