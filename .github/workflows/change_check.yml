@@ -67,7 +67,7 @@ jobs:
             # Ejecutar SQLFluff con salida JSON
             RESULT=$(sqlfluff lint --dialect postgres --format json "$file")
             # Filtrar la salida para mostrar solo errores de las reglas permitidas
-            echo "$RESULT" | jq '.violations[] | select(.code | test("L003|L013|L029|L031|L034|L036|L042"))'
+            echo "$RESULT" | jq '.violations[] | select(.code | test("L013|L029|L031|L034|L042|L054"))'
           done
 
       - name: Run PHPCS on modified PHP files
