@@ -47,7 +47,7 @@ jobs:
             SQL_FILES=$(echo "$CHANGED_FILES" | grep -E 'sql' | grep '\.sql$' | tr '\n' ' ' || true)
             echo "PHP_FILES=${PHP_FILES[@]}" >> $GITHUB_ENV
             echo "SQL_FILES=${SQL_FILES[@]}" >> $GITHUB_ENV
-          fi  # Aquí faltaba cerrar el bloque if
+          fi
           echo "No previous commit to compare."
 
       - name: Run PHP Lint on modified PHP files
@@ -66,13 +66,17 @@ jobs:
           echo "dialect = postgres" >> .sqlfluff
           echo "[sqlfluff:rules]" >> .sqlfluff
           echo "disallow = all" >> .sqlfluff
-          echo "allow = L013, L029, L031, L034, L036, L042" >> .sqlfluff
+          echo "allow = L003, L013, L029, L031, L034, L036, L042" >> .sqlfluff
+          
+          # Añadimos esto para ver el contenido del archivo en el log
+          cat .sqlfluff
           
           IFS=' ' read -r -a sql_files_array <<< "$SQL_FILES"
           for file in "${sql_files_array[@]}"; do
             sqlfluff lint "$file"
           done
-          # Eliminamos el archivo
+          
+          # Opcional: Eliminar el archivo .sqlfluff
           rm .sqlfluff
 
       - name: Run PHPCS on modified PHP files
