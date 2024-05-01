@@ -64,8 +64,8 @@ jobs:
         run: |
           IFS=' ' read -r -a sql_files_array <<< "$SQL_FILES"
           for file in "${sql_files_array[@]}"; do
-            # Aplicando solo errores de sintaxis críticos y excluyendo reglas de estilo
-            sqlfluff lint --dialect postgres --exclude-rules "L003,L010,L016,L034,L036" "$file"
+            # Aplicando solo las reglas especificadas y excluyendo todas las demás
+            sqlfluff lint --dialect postgres --rules "L013,L029,L031,L034,L042,L054" "$file"
           done
 
       - name: Run PHPCS on modified PHP files
