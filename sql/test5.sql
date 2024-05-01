@@ -10,4 +10,4 @@ VALUES((SELECT MAX(contrato_id) FROM contrato), (SELECT barra_id FROM barra WHER
 INSERT INTO servicio_contrato (contrato_id, codigo, punto_suministro_barra_id, descripcion, numero_cliente, periodo_desde, periodo_hasta, direccion, valor_inicial_cpi) 
 VALUES ((SELECT MAX(contrato_id) FROM contrato),'LIP051', 
 (SELECT barra_id FROM barra WHERE nombre = 'CURACAVI' AND voltaje = 12),'', NULL,
-'2024-04-01', '2028-03-31', NULL, 306.746);
+'2024-04-01', '2028-03-31', NULL);
