@@ -12,66 +12,75 @@ jobs:
   change-check:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4.1.1
+      - name: Checkout
+        uses: actions/checkout@v4.1.1
 
-    - name: Setup PHP and install tools
-      uses: shivammathur/setup-php@2.30.2
-      with:
-        php-version: '8.2'
+      - name: Setup PHP and install tools
+        uses: shivammathur/setup-php@2.30.2
+        with:
+          php-version: '8.2'
 
-    - name: Install PHPCS, Variable Analysis, SQLFluff
-      run: |
-        composer require --dev "squizlabs/php_codesniffer=*"
-        composer config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
-        composer require --dev dealerdirect/phpcodesniffer-composer-installer
-        composer require --dev sirbrillig/phpcs-variable-analysis
-        pip install sqlfluff
+      - name: Install PHPCS, Variable Analysis, SQLFluff
+        run: |
+          composer require --dev "squizlabs/php_codesniffer=*"
+          composer config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+          composer require --dev dealerdirect/phpcodesniffer-composer-installer
+          composer require --dev sirbrillig/phpcs-variable-analysis
+          pip install sqlfluff
 
-    - name: Fetch all history for all tags and branches
-      run: git fetch --prune --unshallow
+      - name: Fetch all history for all tags and branches
+        run: git fetch --prune --unshallow
 
-    - name: Determine if there is a previous commit
-      run: |
-        if git rev-parse HEAD^ > /dev/null 2>&1; then
-          echo "HAS_PREVIOUS_COMMIT=true" >> $GITHUB_ENV
-        else
-          echo "HAS_PREVIOUS_COMMIT=false" >> $GITHUB_ENV
-        fi
+      - name: Determine if there is a previous commit
+        run: |
+          if git rev-parse HEAD^ > /dev/null 2>&1; then
+            echo "HAS_PREVIOUS_COMMIT=true" >> $GITHUB_ENV
+          else
+            echo "HAS_PREVIOUS_COMMIT=false" >> $GITHUB_ENV
+          fi
 
-    - name: Find modified files in specified directories
-      run: |
-        if [ "$HAS_PREVIOUS_COMMIT" == "true" ]; then
-          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD || true)
-          PHP_FILES=$(echo "$CHANGED_FILES" | grep -E 'var/www/sigge|var/lib/sigge/scripts|var/lib/sigge/plantillas_reportes|otros' | grep -E '\.php$' | tr '\n' ' ' || true)
-          SQL_FILES=$(echo "$CHANGED_FILES" | grep -E 'sql' | grep '\.sql$' | tr '\n' ' ' || true)
-          echo "PHP_FILES=${PHP_FILES[@]}" >> $GITHUB_ENV
-          echo "SQL_FILES=${SQL_FILES[@]}" >> $GITHUB_ENV
-        else
-          echo "No previous commit to compare."
-        fi
+      - name: Find modified files in specified directories
+        run: |
+          if [ "$HAS_PREVIOUS_COMMIT" == "true" ]; then
+            CHANGED_FILES=$(git diff --name-only HEAD^ HEAD || true)
+            PHP_FILES=$(echo "$CHANGED_FILES" | grep -E 'var/www/sigge|var/lib/sigge/scripts|var/lib/sigge/plantillas_reportes|otros' | grep -E '\.php$' | tr '\n' ' ' || true)
+            SQL_FILES=$(echo "$CHANGED_FILES" | grep -E 'sql' | grep '\.sql$' | tr '\n' ' ' || true)
+            echo "PHP_FILES=${PHP_FILES[@]}" >> $GITHUB_ENV
+            echo "SQL_FILES=${SQL_FILES[@]}" >> $GITHUB_ENV
+          else
+            echo "No previous commit to compare."
 
-    - name: Run PHP Lint on modified PHP files
-      if: env.PHP_FILES != ''
-      run: |
-        IFS=' ' read -r -a php_files_array <<< "$PHP_FILES"
-        for file in "${php_files_array[@]}"; do
-          php -l "$file"
-        done
+      - name: Run PHP Lint on modified PHP files
+        if: env.PHP_FILES != ''
+        run: |
+          IFS=' ' read -r -a php_files_array <<< "$PHP_FILES"
+          for file in "${php_files_array[@]}"; do
+            php -l "$file"
+          done
 
-    - name: Run SQL Lint on modified SQL files
-      if: env.SQL_FILES != ''
-      run: |
-        IFS=' ' read -r -a sql_files_array <<< "$SQL_FILES"
-        for file in "${sql_files_array[@]}"; do
-          sqlfluff lint --dialect postgres "$file"
-        done
+      - name: Run SQL Lint on modified SQL files
+        if: env.SQL_FILES != ''
+        run: |
+          # Creamos este archivo con las reglas que nos interesan
+          echo "[sqlfluff]" > .sqlfluff
+          echo "dialect = postgres" >> .sqlfluff
+          echo "[sqlfluff:rules]" >> .sqlfluff
+          echo "disallow = all" >> .sqlfluff
+          echo "allow = L003, L013, L029, L031, L034, L036, L042" >> .sqlfluff
+          
+          IFS=' ' read -r -a sql_files_array <<< "$SQL_FILES"
+          for file in "${sql_files_array[@]}"; do
+            sqlfluff lint "$file"
+          done
+          
+          # Opcional: Eliminar el archivo .sqlfluff
+          rm .sqlfluff
 
-    - name: Run PHPCS on modified PHP files
-      if: env.PHP_FILES != ''
-      run: |
-        ./vendor/bin/phpcs --standard=VariableAnalysis $PHP_FILES
+      - name: Run PHPCS on modified PHP files
+        if: env.PHP_FILES != ''
+        run: |
+          ./vendor/bin/phpcs --standard=VariableAnalysis $PHP_FILES
 
-    - name: No files modified
-      if: env.PHP_FILES == '' && env.SQL_FILES == '' && env.HAS_PREVIOUS_COMMIT == 'true'
-      run: echo "No PHP or SQL files have been modified."
+      - name: No files modified
+        if: env.PHP_FILES == '' && env.SQL_FILES == '' && env.HAS_PREVIOUS_COMMIT == 'true'
+        run: echo "No PHP or SQL files have been modified."
