@@ -66,14 +66,13 @@ jobs:
           echo "dialect = postgres" >> .sqlfluff
           echo "[sqlfluff:rules]" >> .sqlfluff
           echo "disallow = all" >> .sqlfluff
-          echo "allow = L003, L013, L029, L031, L034, L036, L042" >> .sqlfluff
+          echo "allow = L013, L029, L031, L034, L036, L042" >> .sqlfluff
           
           IFS=' ' read -r -a sql_files_array <<< "$SQL_FILES"
           for file in "${sql_files_array[@]}"; do
             sqlfluff lint "$file"
           done
-          
-          # Opcional: Eliminar el archivo .sqlfluff
+          # Eliminamos el archivo
           rm .sqlfluff
 
       - name: Run PHPCS on modified PHP files
