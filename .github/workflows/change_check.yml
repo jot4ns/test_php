@@ -47,8 +47,8 @@ jobs:
             SQL_FILES=$(echo "$CHANGED_FILES" | grep -E 'sql' | grep '\.sql$' | tr '\n' ' ' || true)
             echo "PHP_FILES=${PHP_FILES[@]}" >> $GITHUB_ENV
             echo "SQL_FILES=${SQL_FILES[@]}" >> $GITHUB_ENV
-          else
-            echo "No previous commit to compare."
+          fi  # Aquí faltaba cerrar el bloque if
+          echo "No previous commit to compare."
 
       - name: Run PHP Lint on modified PHP files
         if: env.PHP_FILES != ''
