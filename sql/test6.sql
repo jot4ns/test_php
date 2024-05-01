@@ -4,8 +4,7 @@ VALUES ((SELECT MAX(contrato_id) FROM contrato)+1,
 (SELECT empresa_id FROM empresa_receptora WHERE nombre_corto_cdec = 'TONELERIA NACIONAL'), 
 'Contrato entre LIPIGAS y TONELERIA NACIONAL', 'LipigasCMG',NULL,543808,'2024-04-01', '2028-03-31','n','n','n','nv', NULL, 'n', 's', 's', 's');
 
-INSERT INTO contrato_barra 
-VALUES((SELECT MAX(contrato_id) FROM contrato), (SELECT barra_id FROM barra WHERE nombre = 'CURACAVI' AND voltaje = 12));
+INSERT INTO VALUES((SELECT MAX(contrato_id) FROM contrato), (SELECT barra_id FROM barra WHERE nombre = 'CURACAVI' AND voltaje = 12));
 
 INSERT INTO servicio_contrato (contrato_id, codigo, punto_suministro_barra_id, descripcion, numero_cliente, periodo_desde, periodo_hasta, direccion, valor_inicial_cpi) 
 VALUES ((SELECT MAX(contrato_id) FROM contrato),'LIP051', 
