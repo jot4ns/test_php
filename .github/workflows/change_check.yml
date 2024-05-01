@@ -69,7 +69,7 @@ jobs:
             RESULT=$(sqlfluff lint --dialect postgres --format json "$file")
             set -e  # Restablecer el comportamiento normal de salida en error
             echo "Result for $file: $RESULT"
-            FILTERED=$(echo "$RESULT" | jq -c '.violations[] | select(.code | test("L013|L029|L031|L034|L042|L054"))')
+            FILTERED=$(echo "$RESULT" | jq -c '.violations | map(select(.code | test("L013|L029|L031|L034|L042|L054")))')
             if [ -z "$FILTERED" ]; then
               echo "No violations matching the specified codes were found in $file"
             else
