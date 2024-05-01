@@ -20,14 +20,13 @@ jobs:
         with:
           php-version: '8.2'
 
-      - name: Install PHPCS, Variable Analysis, SQLFluff, and jq
+      - name: Install PHPCS, Variable Analysis, SQLFluff
         run: |
           composer require --dev "squizlabs/php_codesniffer=*"
           composer config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer require --dev dealerdirect/phpcodesniffer-composer-installer
           composer require --dev sirbrillig/phpcs-variable-analysis
           pip install sqlfluff
-          sudo apt-get update && sudo apt-get install -y jq
 
       - name: Fetch all history for all tags and branches
         run: git fetch --prune --unshallow
@@ -48,8 +47,9 @@ jobs:
             SQL_FILES=$(echo "$CHANGED_FILES" | grep -E 'sql' | grep '\.sql$' | tr '\n' ' ' || true)
             echo "PHP_FILES=${PHP_FILES[@]}" >> $GITHUB_ENV
             echo "SQL_FILES=${SQL_FILES[@]}" >> $GITHUB_ENV
+          else
+            echo "No previous commit to compare."
           fi
-          echo "No previous commit to compare."
 
       - name: Run PHP Lint on modified PHP files
         if: env.PHP_FILES != ''
@@ -64,18 +64,8 @@ jobs:
         run: |
           IFS=' ' read -r -a sql_files_array <<< "$SQL_FILES"
           for file in "${sql_files_array[@]}"; do
-            echo "Linting $file"
-            set +e  # Permitir continuar aunque SQLFluff falle
-            RESULT=$(sqlfluff lint --dialect postgres --format json "$file")
-            set -e  # Restablecer el comportamiento normal de salida en error
-            echo "Result for $file: $RESULT"
-            FILTERED=$(echo "$RESULT" | jq -c '.violations | map(select(.code | test("L013|L029|L031|L034|L042|L054")))')
-            if [ -z "$FILTERED" ]; then
-              echo "No violations matching the specified codes were found in $file"
-            else
-              echo "Violations found in $file:"
-              echo "$FILTERED"
-            fi
+            # Aplicando solo errores de sintaxis críticos y excluyendo reglas de estilo
+            sqlfluff lint --dialect postgres --exclude-rules "L003,L010,L016,L034,L036" "$file"
           done
 
       - name: Run PHPCS on modified PHP files
