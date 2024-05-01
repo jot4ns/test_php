@@ -66,7 +66,7 @@ jobs:
           echo "dialect = postgres" >> .sqlfluff
           echo "[sqlfluff:rules]" >> .sqlfluff
           echo "disallow = all" >> .sqlfluff
-          echo "allow = L003, L013, L029, L031, L034, L036, L042" >> .sqlfluff
+          echo "allow = L013, L029, L031, L034, L042, L054" >> .sqlfluff
           
           # Añadimos esto para ver el contenido del archivo en el log
           cat .sqlfluff
