@@ -27,6 +27,7 @@ jobs:
           composer require --dev dealerdirect/phpcodesniffer-composer-installer
           composer require --dev sirbrillig/phpcs-variable-analysis
           pip install sqlfluff
+          sudo apt-get update && sudo apt-get install -y doxygen
 
       - name: Fetch all history for all tags and branches
         run: git fetch --prune --unshallow
@@ -68,6 +69,19 @@ jobs:
             # Otras reglas: https://docs.sqlfluff.com/en/stable/rules.html
             sqlfluff lint --dialect postgres --rules "L013,L029,L031,L034,L042,L054" "$file"
           done
+
+      - name: Run Doxygen on modified PHP files
+        if: steps.find-modified-files.outputs.php_files != ''
+        run: |
+          echo "INPUT = ${PHP_FILES[@]}" > Doxyfile.temp
+          cat Doxyfile >> Doxyfile.temp
+          doxygen Doxyfile.temp
+          if grep -E 'warning:|error:' doxygen.log; then
+            echo "Doxygen warnings or errors found."
+            exit 1
+          else
+            echo "No Doxygen warnings or errors."
+          fi
 
       - name: Run PHPCS on modified PHP files
         if: env.PHP_FILES != ''
