@@ -34,7 +34,6 @@ class Facturador {
      * @param string $periodo    Periodo de facturación
      * @param array $cuentas_contables    Array de cuentas contables
      * @param string $pais    El país al que refiere Sigge
-     * @param string $debug    Indica con y/n si al ejecutar habrán comentarios en STD_ERR
      * @param array $documento_tributario_id_cli    Array de documento_tributario_id que se facturarán
      * @return void
      */
