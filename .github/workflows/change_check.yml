@@ -65,6 +65,7 @@ jobs:
           IFS=' ' read -r -a sql_files_array <<< "$SQL_FILES"
           for file in "${sql_files_array[@]}"; do
             # Aplicando solo las reglas especificadas y excluyendo todas las demás
+            # Otras reglas: https://docs.sqlfluff.com/en/stable/rules.html
             sqlfluff lint --dialect postgres --rules "L013,L029,L031,L034,L042,L054" "$file"
           done
 
