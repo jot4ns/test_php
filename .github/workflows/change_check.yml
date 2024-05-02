@@ -70,18 +70,25 @@ jobs:
             sqlfluff lint --dialect postgres --rules "L013,L029,L031,L034,L042,L054" "$file"
           done
 
-      - name: Run Doxygen on modified PHP files
+      - name: Check and Prepare Doxyfile
         if: env.PHP_FILES != ''
         run: |
-          echo "INPUT = ${PHP_FILES[@]}" > Doxyfile.temp
-          cat Doxyfile >> Doxyfile.temp
-          doxygen Doxyfile.temp
-          if grep -E 'warning:|error:' doxygen.log; then
-            echo "Doxygen warnings or errors found."
-            exit 1
+          if [ -f "Doxyfile" ]; then
+            echo "Doxyfile found."
+            echo "INPUT = ${PHP_FILES[@]}" > Doxyfile.temp
+            cat Doxyfile >> Doxyfile.temp
+            doxygen Doxyfile.temp
+            if grep -E 'warning:|error:' doxygen.log; then
+              echo "Doxygen warnings or errors found."
+              exit 1
+            else
+              echo "No Doxygen warnings or errors."
+            fi
           else
-            echo "No Doxygen warnings or errors."
-          fi
+            echo "Doxyfile not found, checking repository root and ./docs"
+            find . -name 'Doxyfile'  # This will help to locate if there's any Doxyfile in the directory tree
+            exit 1  # Fail the job if no Doxyfile is found
+
 
       - name: Run PHPCS on modified PHP files
         if: env.PHP_FILES != ''
