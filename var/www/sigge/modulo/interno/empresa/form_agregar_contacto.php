@@ -403,8 +403,6 @@ class Facturador {
      * Imprime un error de facturación y lo guarda en el arreglo de errores.
      *
      * @param int $documento_tributario_id ID del ingreso.
-     * @param string $excepcion Mensaje de la excepción.
-     * @param string $identificador Identificador asociado al facturador.
      * @return void
      */
     private function error_facturacion($documento_tributario_id, $excepcion, $identificador = null) {
