@@ -17,7 +17,6 @@ class Facturador {
     // Pais
     private $pais;
     // Hay o no texto debug
-    private $debug;
     // Documentos tributarios específicos a facturar
     private $documento_tributario_id_cli;
     // ID de empresa emisora
