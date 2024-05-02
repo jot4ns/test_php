@@ -71,7 +71,7 @@ jobs:
           done
 
       - name: Run Doxygen on modified PHP files
-        if: steps.find-modified-files.outputs.php_files != ''
+        if: env.PHP_FILES != ''
         run: |
           echo "INPUT = ${PHP_FILES[@]}" > Doxyfile.temp
           cat Doxyfile >> Doxyfile.temp
