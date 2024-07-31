@@ -8,7 +8,7 @@ function testFunction($param)
 echo "paramsadas sadasdasdasd";
 }
     global $otraVar;
-    $varNooUsada = 23;
+    $varNoUsada = 23;
     $otraVar = "dsfds";
     $fecha = split(":", "2023:04:14");
     $nuevoValor = & $param;
