@@ -59,16 +59,15 @@ jobs:
             php -l "$file"
           done
 
+      - name: Setup reviewdog
+        uses: reviewdog/action-setup@v1
+        with:
+          reviewdog_version: latest
+
       - name: Annotate PHP Lint errors
         if: env.PHP_FILES != ''
-        uses: reviewdog/action-shellcheck@v1
-        with:
-          tool_name: php-lint
-          level: error
-          reporter: github-pr-check
-          filter_mode: added
-          fail_on_error: false
-          check_name: "PHP Lint"
+        run: |
+          php -l $PHP_FILES | reviewdog -f="php-lint" -reporter="github-pr-check" -filter-mode="added"
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -82,14 +81,9 @@ jobs:
 
       - name: Annotate SQL Lint errors
         if: env.SQL_FILES != ''
-        uses: reviewdog/action-setup@v1.3.0
-        with:
-          tool_name: sql-lint
-          level: error
-          reporter: github-pr-check
-          filter_mode: added
-          reviewdog_flags: "-f=json"
-          input_file: "*.sqlfluff.json"
+        run: reviewdog -f=sql-lint -reporter=github-pr-check -level=error < *.sqlfluff.json
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run PHPCS on modified PHP files
         if: env.PHP_FILES != ''
@@ -97,14 +91,9 @@ jobs:
 
       - name: Annotate PHPCS errors
         if: env.PHP_FILES != ''
-        uses: reviewdog/action-setup@v1.3.0
-        with:
-          tool_name: phpcs
-          level: error
-          reporter: github-pr-check
-          filter_mode: added
-          reviewdog_flags: "-f=json"
-          input_file: "phpcs-output.json"
+        run: reviewdog -f=phpcs -reporter=github-pr-check -level=error < phpcs-output.json
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: No files modified
         if: env.PHP_FILES == '' && env.SQL_FILES == '' && env.HAS_PREVIOUS_COMMIT == 'true'
