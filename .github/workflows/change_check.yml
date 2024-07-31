@@ -20,12 +20,13 @@ jobs:
         with:
           php-version: '8.2'
 
-      - name: Install PHPCS, Variable Analysis, SQLFluff
+      - name: Install PHPCS, Variable Analysis, SQLFluff, and PHPLint
         run: |
           composer require --dev "squizlabs/php_codesniffer=*"
           composer config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer require --dev dealerdirect/phpcodesniffer-composer-installer
           composer require --dev sirbrillig/phpcs-variable-analysis
+          composer global require phplint/phplint
           pip install sqlfluff
 
       - name: Fetch all history for all tags and branches
@@ -51,23 +52,18 @@ jobs:
             echo "No previous commit to compare."
           fi
 
-      - name: Run PHP Lint on modified PHP files
-        if: env.PHP_FILES != ''
-        run: |
-          IFS=' ' read -r -a php_files_array <<< "$PHP_FILES"
-          for file in "${php_files_array[@]}"; do
-            php -l "$file"
-          done
-
       - name: Setup reviewdog
         uses: reviewdog/action-setup@v1
         with:
           reviewdog_version: latest
 
-      - name: Annotate PHP Lint errors
+      - name: Run PHPLint on modified PHP files
         if: env.PHP_FILES != ''
-        run: |
-          php -l $PHP_FILES | reviewdog -f="php-lint" -reporter="github-pr-check" -filter-mode="added"
+        run: ~/.composer/vendor/bin/phplint $PHP_FILES -o=summary.json
+
+      - name: Annotate PHPLint errors
+        if: env.PHP_FILES != ''
+        run: reviewdog -f=rdjson -name=PHPLint -reporter=github-pr-check < summary.json
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -81,7 +77,7 @@ jobs:
 
       - name: Annotate SQL Lint errors
         if: env.SQL_FILES != ''
-        run: reviewdog -f=sql-lint -reporter=github-pr-check -level=error < *.sqlfluff.json
+        run: reviewdog -f=rdjson -name=SQLLint -reporter=github-pr-check < *.sqlfluff.json
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -91,7 +87,7 @@ jobs:
 
       - name: Annotate PHPCS errors
         if: env.PHP_FILES != ''
-        run: reviewdog -f=phpcs -reporter=github-pr-check -level=error < phpcs-output.json
+        run: reviewdog -f=rdjson -name=PHPCS -reporter=github-pr-check < phpcs-output.json
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
