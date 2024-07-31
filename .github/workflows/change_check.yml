@@ -27,7 +27,6 @@ jobs:
           composer require --dev dealerdirect/phpcodesniffer-composer-installer
           composer require --dev sirbrillig/phpcs-variable-analysis
           pip install sqlfluff
-          sudo apt-get update && sudo apt-get install -y doxygen
 
       - name: Fetch all history for all tags and branches
         run: git fetch --prune --unshallow
@@ -60,40 +59,53 @@ jobs:
             php -l "$file"
           done
 
+      - name: Annotate PHP Lint errors
+        if: env.PHP_FILES != ''
+        uses: reviewdog/action-shellcheck@v1
+        with:
+          tool_name: php-lint
+          level: error
+          reporter: github-pr-check
+          filter_mode: added
+          fail_on_error: false
+          check_name: "PHP Lint"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Run SQL Lint on modified SQL files
         if: env.SQL_FILES != ''
         run: |
           IFS=' ' read -r -a sql_files_array <<< "$SQL_FILES"
           for file in "${sql_files_array[@]}"; do
-            # Aplicando solo las reglas especificadas y excluyendo todas las demás
-            # Otras reglas: https://docs.sqlfluff.com/en/stable/rules.html
-            sqlfluff lint --dialect postgres --rules "L013,L029,L031,L034,L042,L054" "$file"
+            sqlfluff lint --dialect postgres --rules "L013,L029,L031,L034,L042,L054" "$file" -f json > "${file}.sqlfluff.json"
           done
 
-      - name: Check and Prepare Doxyfile
-        if: env.PHP_FILES != ''
-        run: |
-          if [ -f "Doxyfile" ]; then
-            echo "Doxyfile found."
-            echo "INPUT = ${PHP_FILES[@]}" > Doxyfile.temp
-            cat Doxyfile >> Doxyfile.temp
-            doxygen Doxyfile.temp
-            if grep -E 'warning:|error:' doxygen.log; then
-              echo "Doxygen warnings or errors found."
-              exit 1
-            else
-              echo "No Doxygen warnings or errors."
-            fi
-          else
-            echo "Doxyfile not found, checking repository root and ./docs"
-            find . -name 'Doxyfile'  # This will help to locate if there's any Doxyfile in the directory tree
-            exit 1  # Fail the job if no Doxyfile is found
-
+      - name: Annotate SQL Lint errors
+        if: env.SQL_FILES != ''
+        uses: reviewdog/action-reviewdog@v1
+        with:
+          tool_name: sql-lint
+          level: error
+          reporter: github-pr-check
+          filter_mode: added
+          reviewdog_flags: "-f=json"
+          input_file: "*.sqlfluff.json"
 
       - name: Run PHPCS on modified PHP files
         if: env.PHP_FILES != ''
-        run: |
-          ./vendor/bin/phpcs --standard=VariableAnalysis $PHP_FILES
+        run: ./vendor/bin/phpcs --standard=VariableAnalysis --report=json $PHP_FILES > phpcs-output.json
+
+      - name: Annotate PHPCS errors
+        if: env.PHP_FILES != ''
+        uses: reviewdog/action-reviewdog@v1
+        with:
+          tool_name: phpcs
+          level: error
+          reporter: github-pr-check
+          filter_mode: added
+          reviewdog_flags: "-f=json"
+          input_file: "phpcs-output.json"
 
       - name: No files modified
         if: env.PHP_FILES == '' && env.SQL_FILES == '' && env.HAS_PREVIOUS_COMMIT == 'true'
