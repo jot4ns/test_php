@@ -13,20 +13,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1
 
       - name: Setup PHP and install tools
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@2.30.2
         with:
           php-version: '8.2'
 
-      - name: Install PHPCS, Variable Analysis, SQLFluff, and PHPLint
+      - name: Install PHPCS, Variable Analysis, SQLFluff
         run: |
           composer require --dev "squizlabs/php_codesniffer=*"
           composer config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer require --dev dealerdirect/phpcodesniffer-composer-installer
           composer require --dev sirbrillig/phpcs-variable-analysis
-          composer global require phplint/phplint
+          composer require --dev phpstan/phpstan
           pip install sqlfluff
 
       - name: Fetch all history for all tags and branches
@@ -52,44 +52,38 @@ jobs:
             echo "No previous commit to compare."
           fi
 
-      - name: Setup reviewdog
-        uses: reviewdog/action-setup@v1
-        with:
-          reviewdog_version: latest
-
-      - name: Run PHPLint on modified PHP files
+      - name: Run PHP Lint on modified PHP files
         if: env.PHP_FILES != ''
-        run: ~/.composer/vendor/bin/phplint $PHP_FILES -o=summary.json
-
-      - name: Annotate PHPLint errors
-        if: env.PHP_FILES != ''
-        run: reviewdog -f=rdjson -name=PHPLint -reporter=github-pr-check < summary.json
-        env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          IFS=' ' read -r -a php_files_array <<< "$PHP_FILES"
+          for file in "${php_files_array[@]}"; do
+            php -l "$file"
+          done
 
       - name: Run SQL Lint on modified SQL files
         if: env.SQL_FILES != ''
         run: |
           IFS=' ' read -r -a sql_files_array <<< "$SQL_FILES"
           for file in "${sql_files_array[@]}"; do
-            sqlfluff lint --dialect postgres --rules "L013,L029,L031,L034,L042,L054" "$file" -f json > "${file}.sqlfluff.json"
+            # Aplicando solo las reglas especificadas y excluyendo todas las demás
+            # Otras reglas: https://docs.sqlfluff.com/en/stable/rules.html
+            sqlfluff lint --dialect postgres --rules "L013,L029,L031,L034,L042,L054" "$file"
           done
 
-      - name: Annotate SQL Lint errors
-        if: env.SQL_FILES != ''
-        run: reviewdog -f=rdjson -name=SQLLint -reporter=github-pr-check < *.sqlfluff.json
-        env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Run PHPCS on modified PHP files
+      - name: Run PHPCS PSR12 on modified PHP files
         if: env.PHP_FILES != ''
-        run: ./vendor/bin/phpcs --standard=VariableAnalysis --report=json $PHP_FILES > phpcs-output.json
+        run: |
+          ./vendor/bin/phpcs --standard=psr12 -n $PHP_FILES
 
-      - name: Annotate PHPCS errors
+      - name: Run PHPStan on modified PHP files
         if: env.PHP_FILES != ''
-        run: reviewdog -f=rdjson -name=PHPCS -reporter=github-pr-check < phpcs-output.json
-        env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ./vendor/bin/phpstan a $PHP_FILES -c phpstan/phpstan.neon.dist -a phpstan/phpstan-autoload.php --error-format=github
+
+      - name: Run PHPCS VariableAnalysis on modified PHP files
+        if: env.PHP_FILES != ''
+        run: |
+          ./vendor/bin/phpcs --standard=VariableAnalysis $PHP_FILES
 
       - name: No files modified
         if: env.PHP_FILES == '' && env.SQL_FILES == '' && env.HAS_PREVIOUS_COMMIT == 'true'
