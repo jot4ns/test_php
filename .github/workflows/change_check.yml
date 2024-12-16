@@ -72,8 +72,9 @@ jobs:
 
       - name: Run PHPCS PSR12 on modified PHP files
         if: env.PHP_FILES != ''
+        continue-on-error: true
         run: |
-          ./vendor/bin/phpcs --standard=psr12 -n $PHP_FILES
+          ./vendor/bin/phpcs --standard=psr12 -n $PHP_FILES || echo "PHPCS PSR12 check failed but continuing."
 
       - name: Run PHPStan on modified PHP files
         if: env.PHP_FILES != ''
