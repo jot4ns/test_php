@@ -73,7 +73,7 @@ class Facturador {
         }
         // Si la empresa emisora tiene una clase que implementa la integración
         // con su ERP, instanciarla.
-        if ($empresa_emisora['clase_integracion_erp'] != null)
+        if($empresa_emisora['clase_integracion_erp'] != null)
         {
             $clase_integracion_erp = $empresa_emisora['clase_integracion_erp'];
             $this->obj_conexion_erp = new $clase_integracion_erp($this->conn_pg, $empresa_emisora['nombre_corto_cdec']);
